@@ -1,55 +1,43 @@
-// Get the GitHub username input form
 const gitHubForm = document.getElementById('gitHubForm');
 
 // Listen for submissions on GitHub username input form
 gitHubForm.addEventListener('submit', (e) => {
-
-    // Prevent default form submission action
     e.preventDefault();
 
     // Get the GitHub username input field on the DOM
     let usernameInput = document.getElementById('usernameInput');
+    let reposInput = document.getElementById('reposInput');
 
     // Get the value of the GitHub username input field
     let gitHubUsername = usernameInput.value;
+    let gitHubRepository = reposInput.value;
 
     // Run GitHub API function, passing in the GitHub username
-    requestUserRepos(gitHubUsername)
-        .then(response => response.json()) // parse response into json
+    requestUserRepos(gitHubUsername, gitHubRepository)
+        .then(response => response.json())
         .then(data => {
-            // update html with data from github
+
+            let ul = document.getElementById('userRepos');
+            ul.innerHTML = (``);
+
             for (let i in data) {
-                // Get the ul with id of userRepos
 
                 if (data.message === "Not Found") {
-                    let ul = document.getElementById('userRepos');
-
-                    // Create variable that will create li's to be added to ul
+                    ul = document.getElementById('userRepos');
                     let li = document.createElement('li');
-
-                    // Add Bootstrap list item class to each li
-                    li.classList.add('list-group-item')
-                    // Create the html markup for each li
                     li.innerHTML = (`
-                <p><strong>No account exists with username:</strong> ${gitHubUsername}</p>`);
-                    // Append each li to the ul
+                        <p><strong>Nome de usuário e/ou repositório não encontrado(s)!</strong></p>
+                    `);
                     ul.appendChild(li);
                 } else {
-
-                    let ul = document.getElementById('userRepos');
-
-                    // Create variable that will create li's to be added to ul
+                    ul = document.getElementById('userRepos');
                     let li = document.createElement('li');
 
-                    // Add Bootstrap list item class to each li
-                    li.classList.add('list-group-item')
-
-                    // Create the html markup for each li
                     li.innerHTML = (`
-                <p><strong>Repo:</strong> ${data[i].name}</p>
-                <p><strong>Description:</strong> ${data[i].description}</p>
-                <p><strong>URL:</strong> <a href="${data[i].html_url}">${data[i].html_url}</a></p>
-            `);
+                        <p><strong>Author:</strong> ${data[i].commit.author.name}</p>
+                        <p><strong>Date:</strong> ${data[i].commit.author.date}</p>
+                        <p><strong>Message:</strong> ${data[i].commit.message}</p>
+                    `);
 
                     // Append each li to the ul
                     ul.appendChild(li);
@@ -58,7 +46,7 @@ gitHubForm.addEventListener('submit', (e) => {
         })
 })
 
-function requestUserRepos(username) {
+function requestUserRepos(username, repos) {
     // create a variable to hold the `Promise` returned from `fetch`
-    return Promise.resolve(fetch(`https://api.github.com/users/${username}/repos`));
+    return Promise.resolve(fetch(`https://api.github.com/repos/${username}/${repos}/commits`));
 }
